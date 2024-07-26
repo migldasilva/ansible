@@ -1,0 +1,52 @@
+---
+# tasks file for simple-docker-host
+- name: Install everything Docker
+  block:
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+        
+    - name: Update useless packages from the cache
+      apt:
+        update_cache: yes
+        
+    - name: Update repositories cache and install "docker.io" package
+      apt:
+        name: docker.io
+        update_cache: yes
+      environment:
+        # This way, docker will not be started immediately after the instalation.
+        RUNLEVEL: 1
+
+    - name: Install "docker-compose" package
+      apt:
+        name: docker-compose
+
+    #- name: Install "docker-swarm" package
+      #apt:
+        #name: docker-swarm
+
+    - name: Enable unsecure repos
+      ansible.builtin.template:
+        src: daemon.json.j2
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      when: insecure_local_docker_registry is defined
+
+    - name: Adding existing user '{{ docker_operator }}' to group sudo
+      user:
+        name: '{{ docker_operator }}'
+        groups: docker
+        append: yes
+
+    - name: Starting docker
+      systemd:
+        state: restarted
+        enabled: true
+        name: docker
+  tags:
+    - docker_install_everything
+
+

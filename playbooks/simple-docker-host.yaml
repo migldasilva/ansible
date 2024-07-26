@@ -1,0 +1,10 @@
+---
+- name: Very, very simple docker host.
+  hosts: "{{ HOSTNAME }}"
+  become: true
+  vars:
+    - docker_operator: "{{ DOCKER_OPERATOR }}"
+
+  roles:
+    - simple-docker-host
+

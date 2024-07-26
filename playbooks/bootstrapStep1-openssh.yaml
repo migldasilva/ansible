@@ -1,0 +1,47 @@
+---
+- name: Bootstrapping a dietpi machine.
+  hosts: "{{ HOSTNAME }}"
+  gather_facts: no
+  remote_user: "{{ REMOTE_USER }}"
+  become: true
+
+  tasks:
+    - name: Copy important dotRC files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.owner }}"
+        mode: '0644'
+      loop:
+        - { src: 'resources/bashrc', dest: "/home/{{ REMOTE_USER }}/.bashrc", owner: "{{ REMOTE_USER }}" }
+        - { src: 'resources/vimrc', dest: "/home/{{ REMOTE_USER }}/.vimrc", owner: "{{ REMOTE_USER }}" }
+      tags:
+        - copy_dotRCfiles_keys
+
+    - name: Copy & untar important Vim dotRC files
+      ansible.builtin.unarchive:
+        copy: true
+        src: resources/dotVim.tar.gz
+        dest: "/home/{{ REMOTE_USER }}/"
+        owner: "{{ REMOTE_USER }}"
+        group: "{{ REMOTE_USER }}"
+      tags:
+        - copy_Vim_dotRCfiles
+
+    - name: Install vim
+      ansible.builtin.apt:
+        name: vim
+        state: present
+      register: installVim
+      tags:
+        - install_vim
+
+    - name: Correct default editor (Da Vim, Da rules)
+      community.general.alternatives:
+        name: editor
+        path: /usr/bin/vim
+      when: installVim is succeeded
+      tags:
+        - install_vim
+

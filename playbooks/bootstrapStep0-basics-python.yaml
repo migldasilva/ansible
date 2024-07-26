@@ -1,0 +1,43 @@
+---
+- hosts: "{{ HOSTNAME }}"
+  gather_facts: no
+  remote_user: "{{ REMOTE_USER }}"
+  become: true
+
+  tasks:
+    - name: Updating APT cache
+      block:
+        - name: Print log message
+          ansible.builtin.debug:
+            msg: "Updating APT cache"
+
+        - name: Run "apt update" command 
+          ansible.builtin.raw:
+            apt update
+      tags: 
+        - bootstrap-apt-update
+
+    - name: Install opensftp-server
+      block:
+        - name: Print log message
+          ansible.builtin.debug:
+            msg: "Install opensftp-server"
+
+        - name: Run "apt install" command 
+          ansible.builtin.raw:
+            apt install openssh-client openssh-sftp-server -y
+      tags: 
+        - bootstrap-install-sftp-server
+
+    - name: Install Python3
+      block:
+        - name: Print log message
+          ansible.builtin.debug:
+            msg: "Install Python3"
+
+        - name: Run "apt install" command 
+          ansible.builtin.raw:
+            test -e /usr/bin/python || ( apt install python3 python3-apt python3-pip -y )
+      tags: 
+        - bootstrap-install-python3
+
