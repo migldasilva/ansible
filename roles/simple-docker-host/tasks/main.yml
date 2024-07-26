@@ -35,6 +35,14 @@
         mode: '0644'
       when: insecure_local_docker_registry is defined
 
+    - name: Create docker_volumes directory
+      ansible.builtin.file:
+        state: "directory"
+        path: /opt/docker_volumes
+        owner: "{{ docker_operator }}"
+        group: "{{ docker_operator }}"
+        mode: '0755'
+
     - name: Adding existing user '{{ docker_operator }}' to group sudo
       user:
         name: '{{ docker_operator }}'
